@@ -28,7 +28,7 @@ export const ToDoForm = () => {
         className="todo-input"
         type="text"
         placeholder="What is it today"
-        name=""
+        name="1"
         value={job}
         onChange={(e) => {
           setJob(e.target.value);
