@@ -1,5 +1,4 @@
-// ToDoList.js
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { StoreContext } from "../Store";
 import { ToDoForm } from "./ToDoForm";
 import { ToDo } from "./ToDo";
@@ -8,21 +7,30 @@ import { EditToDoForm } from "./EditToDoForm";
 export const ToDoWrapper = () => {
   const { todos, setTodo, currentTab, setCurrentTab } =
     useContext(StoreContext);
-  ///
+
+  const [selectedTasks, setSelectedTasks] = useState([]);
+  
   const toggleComplete = (id) => {
-    // Update todos by toggling the completed property of the specified todo
     const updatedTodos = todos.map((todo) =>
       todo.id === id ? { ...todo, completed: !todo.completed } : todo
     );
     setTodo(updatedTodos);
   };
-  /// delete fuction
   const deleteJob = (id) => {
-    // Filter out the task with the specified id
-    const updatedTodos = todos.filter((todo) => todo.id !== id);
-
-    // Update the state to reflect the removal of the task
+    const updatedTodos = todos.filter(
+      todo => todo.id !== id
+    );
     setTodo(updatedTodos);
+    // Clear selected tasks after deletion
+  };
+  
+  const deleteJobs = () => {
+    const updatedTodos = todos.filter(
+      (todo) => !selectedTasks.includes(todo.id)
+    );
+    setTodo(updatedTodos);
+    // Clear selected tasks after deletion
+    setSelectedTasks([]);
   };
 
   const editJob = (id) => {
@@ -32,12 +40,23 @@ export const ToDoWrapper = () => {
       )
     );
   };
-  const editTask = (task,id) => {
+
+  const editTask = (task, id) => {
     setTodo(
       todos.map((todo) =>
         todo.id === id ? { ...todo, task, isEditing: !todo.isEditing } : todo
       )
     );
+  };
+
+  const handleSelect = (id) => {
+    if (selectedTasks.includes(id)) {
+      // Deselect the task
+      setSelectedTasks(selectedTasks.filter((taskId) => taskId !== id));
+    } else {
+      // Select the task
+      setSelectedTasks([...selectedTasks, id]);
+    }
   };
 
   const filteredTodos = () => {
@@ -53,7 +72,6 @@ export const ToDoWrapper = () => {
   return (
     <div className="TodoWrapper">
       <ToDoForm />
-      {/* Update your JSX for the buttons in ToDoList.js */}
       <div className="tabs">
         <button
           onClick={() => setCurrentTab("all")}
@@ -77,7 +95,7 @@ export const ToDoWrapper = () => {
 
       {filteredTodos().map((todo) =>
         todo.isEditing ? (
-          <EditToDoForm  editJob={editTask} task={todo}/>
+          <EditToDoForm editJob={editTask} task={todo} />
         ) : (
           <ToDo
             task={todo}
@@ -85,8 +103,18 @@ export const ToDoWrapper = () => {
             toggleComplete={() => toggleComplete(todo.id)}
             deleteJob={deleteJob}
             editJob={editJob}
+            isSelected={selectedTasks.includes(todo.id)}
+            handleSelect={handleSelect}
           />
         )
+      )}
+
+      {selectedTasks.length > 0 && filteredTodos().length > 0 && (
+        <div>
+          <button className="todo-btn" onClick={deleteJobs}>
+            Delete Selected
+          </button>
+        </div>
       )}
     </div>
   );
